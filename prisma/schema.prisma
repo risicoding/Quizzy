@@ -1,0 +1,76 @@
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String // Hashed password
+  createdAt DateTime @default(now())
+
+  quizzes      Quiz[]
+  quizSessions SessionUser[]
+}
+
+model Quiz {
+  id           String        @id @default(uuid())
+  creatorId    String
+  creator      User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  questions    Question[]
+  quizSessions QuizSession[]
+  createdAt    DateTime      @default(now())
+}
+
+model Question {
+  id            String   @id @default(uuid())
+  quizId        String
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  text          String
+  options       String[]
+  correctAnswer String
+  createdAt     DateTime @default(now())
+  Answer        Answer[]
+}
+
+model QuizSession {
+  id                   String        @id @default(uuid())
+  quizId               String
+  quiz                 Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  isActive             Boolean       @default(true)
+  currentQuestionIndex Int           @default(0)
+  users                SessionUser[]
+  createdAt            DateTime      @default(now())
+}
+
+model SessionUser {
+  id        String      @id @default(uuid())
+  sessionId String
+  session   QuizSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Int         @default(0)
+  createdAt DateTime    @default(now())
+  Answer    Answer[]
+}
+
+model Answer {
+  id             String      @id @default(uuid())
+  sessionUserId  String
+  sessionUser    SessionUser @relation(fields: [sessionUserId], references: [id], onDelete: Cascade)
+  questionId     String
+  question       Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption String
+  isCorrect      Boolean
+  createdAt      DateTime    @default(now())
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // uncomment next line if you use Prisma <5.10
+  // directUrl = env("DATABASE_URL_UNPOOLED")
+}
