@@ -1,7 +1,7 @@
-import React from 'react';
+import SignIn from "@/features/auth/sign-in/components/sign-in";
 
 const Page = () => {
-  return <div>Page</div>;
+  return <SignIn />;
 };
 
 export default Page;
