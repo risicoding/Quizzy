@@ -8,18 +8,23 @@ const authRoutes = ["/sign-in", "/sign-up"];
 export async function middleware(request: NextRequest) {
   const headers = await nextHeaders();
   const session = await auth.api.getSession({ headers });
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
   console.log("middleware", { session, pathname });
 
-  // Redirect authenticated users away from auth pages
+  const isPrivateRoute = privateRoutes.some((r) => pathname.startsWith(r));
+
   if (session && authRoutes.includes(pathname)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Redirect unauthenticated users away from private routes
-  if (!session && privateRoutes.includes(pathname)) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+  if (!session && isPrivateRoute) {
+    const signInUrl = new URL("/sign-in", request.url);
+    signInUrl.searchParams.set(
+      "redirect_url",
+      process.env.BETTER_AUTH_URL + pathname + search,
+    ); // Preserve query params
+    return NextResponse.redirect(signInUrl);
   }
 
   return NextResponse.next();

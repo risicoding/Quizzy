@@ -1,7 +1,12 @@
 import SignIn from "@/features/auth/sign-in/components/sign-in";
+import { Suspense } from "react";
 
 const Page = () => {
-  return <SignIn />;
+  return (
+    <Suspense>
+      <SignIn />
+    </Suspense>
+  );
 };
 
 export default Page;

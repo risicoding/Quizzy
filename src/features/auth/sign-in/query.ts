@@ -4,7 +4,7 @@ import { authClient } from "../client";
 
 export const useSignInMutation = () => {
   return useMutation({
-    mutationFn: async (data: signInSchemaType):Promise<any> => {
+    mutationFn: async (data: signInSchemaType): Promise<any> => {
       const res = await authClient.signIn.email(data);
       console.log(res);
       if (res.error) {

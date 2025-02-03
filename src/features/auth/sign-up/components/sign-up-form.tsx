@@ -15,8 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSignUpMutation } from "../query";
 import { useRouter } from "next/navigation";
+import { authClient } from "../../client";
+import { Loader } from "lucide-react";
 
-const SignUpForm = () => {
+const SignUpForm = ({redirectUrl}:{redirectUrl?:string}) => {
   const form = useForm<signUpSchemaType>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -26,27 +28,27 @@ const SignUpForm = () => {
     },
   });
 
-  const { mutate, data, status } = useSignUpMutation();
-
-  const mutationData = data as any;
-
   const router = useRouter();
 
   const onSubmit = async (data: signUpSchemaType) => {
-    console.log(data);
-    mutate(data);
-    console.log(mutationData);
+    console.log("Form data", data);
+    const res = await authClient.signUp.email(data);
+    console.log("res", res);
 
-    if (status === "error" && mutationData !== undefined) {
-      return form.setError("email", {
-        type: mutationData.error.code,
-        message: mutationData.error.message,
+    if (res.error) {
+      console.log(res.error);
+      form.setError("email", {
+        type: res.error.code,
+        message: res.error.message,
+      });
+      return form.setError("password", {
+        type: res.error.code,
+        message: res.error.message,
       });
     }
 
-    if (status === "success") {
-      router.push("/");
-    }
+    router.push(redirectUrl || "/");
+
   };
 
   return (
@@ -91,8 +93,16 @@ const SignUpForm = () => {
             </FormItem>
           )}
         />
-        <Button className="mt-4 w-full h-8" type="submit">
-          Submit
+        <Button
+          className="mt-4 h-8 w-full"
+          type="submit"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? (
+            <Loader className="size-4 animate-spin" />
+          ) : (
+            "Button"
+          )}
         </Button>
       </form>
     </Form>

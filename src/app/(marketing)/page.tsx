@@ -12,21 +12,17 @@ const Page = () => {
     queryFn: async () => {
       const res = await authClient.getSession();
       console.log(res);
-      router.refresh();
+      router.push("/");
       return res;
     },
   });
 
   return (
-    <div className="flex-col min-h-screen gap-4 items-center justify-center">
+    <div className="min-h-screen items-center justify-center gap-4 p-24">
       {!data?.data ? (
         <Button
           onClick={async () => {
-            const res = await authClient.signIn.email({
-              email: "risi@example.com",
-              password: "risipassword",
-            });
-            console.log(res);
+            router.push("/sign-in");
           }}
         >
           signin
@@ -35,14 +31,13 @@ const Page = () => {
         <Button
           onClick={async () => {
             await authClient.signOut();
-            router.refresh();
+            router.push("/");
           }}
         >
           signout
         </Button>
       )}
-      {JSON.stringify(data)}
-      <Image src={'/logo.svg'} width={300} height={400} alt='logo'/>
+      <p className="mt-5">{JSON.stringify(data)}</p>
     </div>
   );
 };

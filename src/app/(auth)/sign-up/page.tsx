@@ -1,8 +1,12 @@
 import SignUp from "@/features/auth/sign-up/components/sign-up";
-import React from "react";
+import { Suspense } from "react";
 
 const Page = () => {
-  return <SignUp />;
+  return (
+    <Suspense>
+      <SignUp />
+    </Suspense>
+  );
 };
 
 export default Page;

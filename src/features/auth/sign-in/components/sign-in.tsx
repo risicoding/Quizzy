@@ -1,3 +1,4 @@
+"use client";
 import {
   Card,
   CardContent,
@@ -11,11 +12,16 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { authClient } from "../../client";
 
 const SignIn = () => {
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect_url");
+
   return (
     <div className="space-y-4">
-      <div className="flex w-full gap-2 items-center justify-center">
+      <div className="flex w-full items-center justify-center gap-2">
         <Image src={"/logo.svg"} width={20} height={20} alt="brand-logo" />
         <h3 className="font-semibold">Quizzy</h3>
       </div>
@@ -27,21 +33,21 @@ const SignIn = () => {
             Login with your google or github account
           </CardDescription>
           <div>
-            <div className="flex flex-col items-center text-xs space-y-2 py-4">
+            <div className="flex flex-col items-center space-y-2 py-4 text-xs">
+
               <Button
                 variant="outline"
                 size="xs"
-                className="flex items-center space-x-1 w-full py-1"
+                className="flex w-64 items-center space-x-1"
+                onClick={async () => {
+                  const res = await authClient.signIn.social({
+                    provider: "github",
+                    callbackURL: redirectUrl ?? "/",
+                  });
+                  console.log(res);
+                }}
               >
-                <FaGoogle className="w-5 h-5" />
-                <span className="text-[13px] leading-5">Login with Google</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="xs"
-                className="flex items-center space-x-1 w-64"
-              >
-                <FaGithub className="w-5 h-5" />
+                <FaGithub className="h-5 w-5" />
                 <span className="text-[13px]">Login with GitHub</span>
               </Button>
             </div>
@@ -54,11 +60,14 @@ const SignIn = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <SignInForm />
+          <SignInForm redirectUrl={redirectUrl ? redirectUrl : "/"} />
         </CardContent>
         <CardFooter>
-          <Link href="/sign-up" className="w-full">
-            <h4 className="text-xs text-center w-full">
+          <Link
+            href={`/sign-up?redirect_url=${redirectUrl}`}
+            className="w-full"
+          >
+            <h4 className="w-full text-center text-xs">
               Dont have an account ? <span className="underline">Sign Up</span>
             </h4>
           </Link>

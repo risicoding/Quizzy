@@ -13,10 +13,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Loader } from "lucide-react";
 import { useSignInMutation } from "../query";
-import { useRouter } from "next/router";
+import { useRouter, useSearchParams } from "next/navigation";
+import { authClient } from "../../client";
 
-const SignInForm = () => {
+const SignInForm = ({ redirectUrl }: { redirectUrl?: string }) => {
   const form = useForm<signInSchemaType>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -24,26 +26,27 @@ const SignInForm = () => {
       password: "",
     },
   });
+
   const router = useRouter();
 
-  const { mutate, data, status } = useSignInMutation();
-  const mutationData = data as any;
-
   const onSubmit = async (data: signInSchemaType) => {
-    console.log(data);
-    mutate(data);
-    console.log(mutationData);
+    console.log("Form data", data);
+    const res = await authClient.signIn.email(data);
+    console.log("res", res);
 
-    if (status === "error" && mutationData !== undefined) {
-      return form.setError("email", {
-        type: mutationData.error.code,
-        message: mutationData.error.message,
+    if (res.error) {
+      console.log(res.error);
+      form.setError("email", {
+        type: res.error.code,
+        message: res.error.message,
+      });
+      return form.setError("password", {
+        type: res.error.code,
+        message: res.error.message,
       });
     }
 
-    if (status === "success") {
-      router.push("/");
-    }
+    router.push(redirectUrl || "/");
   };
 
   return (
@@ -75,8 +78,16 @@ const SignInForm = () => {
             </FormItem>
           )}
         />
-        <Button size="xs" className="mt-4 w-full" type="submit">
-          Submit
+        <Button
+          className="mt-4 h-8 w-full"
+          type="submit"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? (
+            <Loader className="size-4 animate-spin" />
+          ) : (
+            "Button"
+          )}
         </Button>
       </form>
     </Form>
